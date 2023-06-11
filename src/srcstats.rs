@@ -49,3 +49,28 @@ pub fn get_summary_src_stats(in_dir: &Path) -> Result<SrcStats, StatsError> {
         blanks: total_blanks,
     })
 }
+
+pub fn get_src_stats_for_file(file_name: &Path) -> Result<SrcStats, StatsError> {
+    let file_contents = fs::read_to_string(file_name)?;
+    let mut loc = 0;
+    let mut blanks = 0;
+    let mut comments = 0;
+    for line in file_contents.lines() {
+        if line.len() == 0 {
+            blanks += 1;
+        } else if line.trim_start().starts_with("//") {
+            comments += 1;
+        } else {
+            loc += 1;
+        }
+    }
+
+    let source_stats = SrcStats {
+        number_of_files: u32::try_from(file_contents.lines().count())?,
+        loc: loc,
+        comments: comments,
+        blanks: blanks,
+    };
+
+    Ok(source_stats)
+}
